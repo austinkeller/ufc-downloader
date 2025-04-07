@@ -77,7 +77,7 @@ def import_downloads(
         # Scan for UFC files by looking for the "UFC." prefix
         for src_root, src_dirs, src_files in os.walk(SOURCE_DIR):
             for dir_name in src_dirs:
-                if dir_name.startswith("UFC."):
+                if dir_name.upper().startswith("UFC."):
                     # Found one.
                     source_path = os.path.join(src_root, dir_name)
 
