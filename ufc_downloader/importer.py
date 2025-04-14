@@ -31,7 +31,7 @@ def find_closest_match(
         logger.info(f"Closest match found: {closest_match}")
         return closest_match
     else:
-        logger.error("No close match found for the given movie title.")
+        logger.error(f"No close match found for the movie title {movie_title}")
         return None
 
 
@@ -113,7 +113,8 @@ def import_downloads(
                     # Match to an event
                     event_name = find_closest_match(movie_title, titles_to_events_map)
                     if not event_name:
-                        return False
+                        print(f"Skipping {source_path} because no match found.")
+                        continue
                     movie_title = event_name if event_name else movie_title
 
                     dest_dir_name = RENAME_FILE_FORMAT.format(
