@@ -35,6 +35,23 @@ def find_closest_match(
         return None
 
 
+def verify_match(movie_title: str, event_name: str, source_path: str) -> bool:
+    # Eliminate common mistakes where difflib finds a close match with the wrong event number.
+    # e.g., a download for "UFC on ESPN 69" might match "UFC on ESPN 68" if 69 is not in the index.
+    movie_numbers = set(re.findall(r"\d+", movie_title))
+    event_numbers = set(re.findall(r"\d+", event_name))
+
+    # If the movie title has numbers, they must be a subset of the numbers in the event name.
+    if movie_numbers and not movie_numbers.issubset(event_numbers):
+        logger.warning(
+            f"Potential mismatch for '{source_path}'. Numbers in title "
+            f"({movie_numbers}) do not match numbers in event name "
+            f"'{event_name}' ({event_numbers})."
+        )
+        return False
+    return True
+
+
 def handle_empty_source_dir(
     source_path: str,
     interactive: bool,
@@ -112,10 +129,12 @@ def import_downloads(
 
                     # Match to an event
                     event_name = find_closest_match(movie_title, titles_to_events_map)
-                    if not event_name:
+                    if not event_name or not verify_match(
+                        movie_title, event_name, source_path
+                    ):
                         print(f"Skipping {source_path} because no match found.")
                         continue
-                    movie_title = event_name if event_name else movie_title
+                    movie_title = event_name
 
                     dest_dir_name = RENAME_FILE_FORMAT.format(
                         movie_title=movie_title, edition_tag=edition
